@@ -3,15 +3,15 @@ from os import path
 
 class highscore:
 
-    def __init__(self, base_name, name=None, high='max'):
+    def __init__(self, dbase_name, name=None, high='max'):
         '''
-        base name: the file to store the values (it will be txt always but you can use any extension).
+        dbase name: the file to store the values (it will be txt always but you can use any extension).
 
         name: name of the player that is currently playing (or use later as self.name = 'myname').
 
         high: default is max so the higher the score the better.
         '''
-        self.base_name = base_name
+        self.base_name = dbase_name
         self.name = name
         self.high = high
         self._check()

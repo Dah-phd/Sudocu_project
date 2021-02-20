@@ -51,25 +51,3 @@ class sudoku:
 
     def is_win(self):
         return True if self.board == self.template else False
-
-
-# ls = [
-#     [0, 0, 0, 0, 2, 0, 0, 5, 0],
-#     [3, 0, 0, 0, 8, 0, 4, 0, 1],
-#     [0, 2, 0, 7, 0, 6, 0, 0, 9],
-#     [0, 8, 5, 9, 0, 0, 0, 1, 0],
-#     [0, 0, 0, 0, 5, 0, 0, 0, 0],
-#     [0, 3, 0, 0, 0, 8, 9, 7, 5],
-#     [9, 0, 6, 8, 0, 7, 0, 0, 0],
-#     [7, 0, 0, 0, 9, 0, 0, 0, 8],
-#     [2, 0, 0, 0, 6, 0, 0, 0, 3]
-# ]
-
-
-# if __name__ == '__main__':
-#     bor = sudoku(ls)
-#     print(bor.board)
-#     print(bor.template)
-#     print(bor.is_correct(1, 2, 4))
-#     print(bor.is_correct(8, 0, 0))
-#     print(bor.board)

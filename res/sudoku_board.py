@@ -33,5 +33,4 @@ class request_tmp:
                     else:
                         self.board[t1].append(0)
                 except IndexError:
-                    print(len(self.fields))
                     self.board[t1].append(0)
