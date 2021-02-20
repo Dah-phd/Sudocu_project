@@ -15,12 +15,10 @@ class GUI:
     ]
 
     def __init__(self):
-        self.active = True
         self.klok = pg.time.Clock()
         self.font = pg.font.SysFont('Times New Roman', 66)
         self.dims = (730, 800)
         self.grid = pg.display.set_mode(self.dims)
-        self._text_boxes = []
 
     def run(self):
 
@@ -30,6 +28,7 @@ class GUI:
             if self.lives >= 0:
                 self.controls()
             else:
+                self.active = False
                 self.end()
             pg.display.update()
 
@@ -52,7 +51,7 @@ class GUI:
         self.grid.blit(self.font.render(
             str(self.lives), True, (23, 236, 236)), (250, 730))
         self.grid.blit(self.font.render(
-            str(self._timer(time.time()-self.time)), True, (23, 236, 236)), (600, 730))
+            str(self._timer(time.time()-self.time)), True, (23, 236, 236)), (580, 730))
 
     def _make_boxes(self):
         if not self._text_boxes:
@@ -69,6 +68,7 @@ class GUI:
                                                      REPLACE=True)
                                                  ))
         if not self._text_boxes:
+            self.active = False
             self.end()
         for box in self._text_boxes:
             box[2].draw(self.grid)
@@ -98,28 +98,35 @@ class GUI:
                     self.lives -= 1
 
     def end(self):
-        self.grid.fill((255, 255, 255))
-        if self.lives >= 0:
-            self.score.new_score(time.time()-self.time)
-            color = (23, 236, 236)
+        self.active = False
+        active = True
+        while active:
+            self.grid.fill((255, 255, 255))
+            if self.lives >= 0:
+                if not self.saved:
+                    self.score.new_score(time.time()-self.time)
+                    self.saved = True
+                color = (23, 236, 236)
+                self.grid.blit(self.font.render(
+                    'WINNER!!!', True, color), (100, 300))
+            else:
+                color = (255, 50, 50)
+                self.grid.blit(self.font.render(
+                    'GAME OVER', True, color), (100, 300))
             self.grid.blit(self.font.render(
-                'WINNER!!!', True, color), (100, 300))
-        else:
-            color = (255, 50, 50)
+                'ESC to quit', True, color), (100, 400))
             self.grid.blit(self.font.render(
-                'GAME OVER', True, color), (100, 300))
-        self.grid.blit(self.font.render(
-            'ESC to quit | Enter for new game', True, color), (100, 400))
-        self.grid.blit(self.font.render(
-            'ESC to quit | Enter for new game', True, color), (100, 400))
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                self.active = False
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE:
-                    self.active = False
-                elif event.key == pg.K_SPACE or event.key == pg.K_RETURN:
-                    self.start()
+                'Enter for new game', True, color), (100, 480))
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    active = False
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_ESCAPE:
+                        active = False
+                    elif event.key == pg.K_SPACE or event.key == pg.K_RETURN:
+                        active = False
+                        self.start()
+            pg.display.update()
 
     def start(self):
         '''
@@ -128,8 +135,10 @@ class GUI:
         self.score = highscore(
             dbase_name='res\\saves',
             high='min')
+        self.saved = False
         name_box = InputBox((250, 60, 350, 53), font_size=66)
-        while self.active:
+        active = True
+        while active:
             self.grid.fill((100, 100, 100))
             name_box.draw(self.grid)
             self.grid.blit(self.font.render(
@@ -142,21 +151,26 @@ class GUI:
             if hs:
                 for n, score in enumerate(hs):
                     self.grid.blit(self.font.render(
-                        str(n), True, (23, 236, 236)), (50, 130))
+                        str(n+1), True, (23, 236, 236)), (70, 200+n*60))
                     self.grid.blit(self.font.render(
-                        score[0], True, (23, 236, 236)), (50, 130))
+                        score[0], True, (23, 236, 236)), (115, 200+n*60))
                     self.grid.blit(self.font.render(
-                        str(self._timer(score[1])), True, (23, 236, 236)), (50, 130))
+                        str(self._timer(score[1])), True, (23, 236, 236)), (440, 200+n*60))
+                    if n == 6:
+                        break
             for event in pg.event.get():
                 if event.type == pg.QUIT:
-                    self.active = False
+                    active = False
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_RETURN:
+                        active = False
+                        self.active = True
                         self.score.name = name_box.text
                         self.lives = 4
                         self.template = request_tmp()
                         self.board = sudoku(self.template.board)
                         self.time = time.time()
+                        self._text_boxes = []
                         self.run()
                 name_box.handle_event(event)
             pg.display.update()
