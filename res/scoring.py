@@ -1,20 +1,35 @@
 from os import path
+import sqlite3 as sq
+from operator import itemgetter
 
 
 class highscore:
 
-    def __init__(self, dbase_name, name=None, high='max'):
+    def __init__(self, base_name, name=None, high='max'):
         '''
-        dbase name: the file to store the values (it will be txt always but you can use any extension).
+        base name: the file to store the values (it will be txt always but you can use any extension).
 
         name: name of the player that is currently playing (or use later as self.name = 'myname').
 
         high: default is max so the higher the score the better.
         '''
-        self.base_name = dbase_name
+        self.link = sq.connect(base_name)
+        self.cur = self.link.cursor()
+        self.table = 'scores'
         self.name = name
         self.high = high
         self._check()
+
+    def _check(self):
+        self.cur.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        )
+        if self.table in [t[0] for t in self.cur]:
+            return
+        else:
+            self.cur.execute(
+                f"CREATE TABLE {self.table} (id integer primary key autoincrement, name varchar(50), score int)"
+            )
 
     def quarry(self):
         '''
@@ -22,50 +37,21 @@ class highscore:
 
         RETURNS LIST OF TUPLES
         '''
-        result = []
-        for score in self._pull().split('-<>-'):
-            if not score:
-                return
-            else:
-                result.append(self._decode(score))
-        if self.high == 'min':
-            return sorted(result, key=lambda x: x[1])
+        self.cur.execute(
+            f"SELECT name, score FROM {self.table}"
+        )
+        result = [sc for sc in self.cur]
+        if self.high == 'max':
+            result.sort(key=itemgetter(1), reverse=True)
         else:
-            return sorted(result, key=lambda x: x[1], reverse=True)
+            result.sort(key=itemgetter(1))
+        return result
 
     def new_score(self, value):
-        self.value = value
-        entry = self._encode()
-        data = self._pull()
-        if not data:
-            data = entry
-            self._save(data)
-            return
-        data = data+'-<>-'+entry
-        self._save(data)
-        return
-
-    def _encode(self):
-        value = str((self.value*5)/19+16)
-        return value+'-'+self.name
-
-    def _decode(self, encoded):
-        value, name = encoded.split('-')
-        value = ((float(value)-16)*19)/5
-        return (name, int(value))
-
-    def _pull(self):
-        with open(self.base_name, 'r') as f:
-            return f.read()
-
-    def _save(self, data):
-        with open(self.base_name, 'w') as f:
-            f.write(data)
-        return
-
-    def _check(self):
-        if path.isfile(self.base_name):
-            return
-        else:
-            with open(self.base_name, 'x'):
-                return
+        name = str(self.name)
+        if len(name) > 50:
+            name = name[:50]
+        self.cur.execute(
+            f"INSERT INTO {self.table} (name, score) VALUES (?, ?)", (name, value)
+        )
+        self.link.commit()

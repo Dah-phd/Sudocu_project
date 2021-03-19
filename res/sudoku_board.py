@@ -19,7 +19,7 @@ class request_tmp:
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             self.connection = False
             with open('oftemp.json', 'r') as f:
-                self.fields = json.load(f)
+                self.fields = json.load(f)[self.difficulty]
 
     def _build(self):
         self.board = [[], [], [], [], [], [], [], [], []]

@@ -11,6 +11,9 @@ class GUI:
         pg.K_1, pg.K_2, pg.K_3,
         pg.K_4, pg.K_5, pg.K_6,
         pg.K_7, pg.K_8, pg.K_9,
+        pg.K_KP1, pg.K_KP2, pg.K_KP3,
+        pg.K_KP4, pg.K_KP5, pg.K_KP6,
+        pg.K_KP7, pg.K_KP8, pg.K_KP9,
         pg.K_BACKSPACE
     ]
 
@@ -19,6 +22,7 @@ class GUI:
         self.font = pg.font.SysFont('Times New Roman', 66)
         self.dims = (730, 800)
         self.grid = pg.display.set_mode(self.dims)
+        self.difficulty = 3
 
     def run(self):
 
@@ -81,11 +85,29 @@ class GUI:
                 for box in self._text_boxes:
                     box[2].handle_event(event)
             if event.type == pg.KEYDOWN:
-                if event.key == pg.K_RETURN:
+                if event.key == pg.K_RETURN or event.key == pg.K_KP_ENTER:
                     self.check()
                 elif event.key in self.keys:
                     for box in self._text_boxes:
                         box[2].handle_event(event)
+                elif event.key == pg.K_UP:
+                    self._box_arrows(0, -1)
+                elif event.key == pg.K_DOWN:
+                    self._box_arrows(0, 1)
+                elif event.key == pg.K_LEFT:
+                    self._box_arrows(-1, 0)
+                elif event.key == pg.K_RIGHT:
+                    self._box_arrows(1, 0)
+
+    def _box_arrows(self, x, y):
+        for box in self._text_boxes:
+            if box[2].active:
+                box[2].active = False
+                for newbox in self._text_boxes:
+                    if box[0]+y == newbox[0] and box[1]+x == newbox[1]:
+                        newbox[2].active = True
+                        break
+                break
 
     def check(self):
         for box in self._text_boxes:
@@ -103,9 +125,9 @@ class GUI:
         while active:
             self.grid.fill((255, 255, 255))
             if self.lives >= 0:
-                if not self.saved:
+                if self.difficulty == 3:
                     self.score.new_score(time.time()-self.time)
-                    self.saved = True
+                    self.difficulty = 2
                 color = (23, 236, 236)
                 self.grid.blit(self.font.render(
                     'WINNER!!!', True, color), (100, 300))
@@ -135,8 +157,10 @@ class GUI:
         self.score = highscore(
             dbase_name='res\\saves',
             high='min')
-        self.saved = False
-        name_box = InputBox((250, 60, 350, 53), font_size=66)
+        name_box = InputBox((250, 60, 400, 53), font_size=66)
+        easy = InputBox((50, 130, 200, 50), text='Easy', font_size=66)
+        normal = InputBox((250, 130, 200, 50), text='Normal', font_size=66)
+        hard = InputBox((450, 130, 200, 50), text='Hard', font_size=66)
         active = True
         while active:
             self.grid.fill((100, 100, 100))
@@ -146,17 +170,20 @@ class GUI:
             self.grid.blit(self.font.render(
                 'Press enter to continue', True, (23, 236, 236)), (50, 700))
             self.grid.blit(self.font.render(
-                'HIGHSCORE:', True, (23, 236, 236)), (50, 130))
+                'HIGHSCORE:', True, (23, 236, 236)), (50, 180))
             hs = self.score.quarry()
+            easy.draw(self.grid)
+            normal.draw(self.grid)
+            hard.draw(self.grid)
             if hs:
-                for n, score in enumerate(hs):
+                for n, score in enumerate(hs, start=2):
                     self.grid.blit(self.font.render(
                         str(n+1), True, (23, 236, 236)), (70, 200+n*60))
                     self.grid.blit(self.font.render(
                         score[0], True, (23, 236, 236)), (115, 200+n*60))
                     self.grid.blit(self.font.render(
                         str(self._timer(score[1])), True, (23, 236, 236)), (440, 200+n*60))
-                    if n == 6:
+                    if n == 4:
                         break
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -164,16 +191,26 @@ class GUI:
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_RETURN:
                         active = False
-                        self.active = True
-                        self.score.name = name_box.text
-                        self.lives = 4
-                        self.template = request_tmp()
-                        self.board = sudoku(self.template.board)
-                        self.time = time.time()
-                        self._text_boxes = []
-                        self.run()
+                        self._gameprep(
+                            name_box, 2 if normal.active else 1 if easy.active else 3
+                        )
+
+                easy.handle_event(event)
+                normal.handle_event(event)
+                hard.handle_event(event)
                 name_box.handle_event(event)
             pg.display.update()
+
+    def _gameprep(self, name_box, diff):
+        self.difficulty = diff
+        self.active = True
+        self.score.name = name_box.text
+        self.lives = 4
+        self.template = request_tmp(self.difficulty)
+        self.board = sudoku(self.template.board)
+        self.time = time.time()
+        self._text_boxes = []
+        self.run()
 
     def _timer(self, val):
         seconds = str(int(val % 60))
