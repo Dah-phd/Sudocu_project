@@ -32,14 +32,12 @@ class sudoku:
         find = self._find_location()
         if not find:
             return True
-        else:
-            row, column = find
         for t in range(1, 10):
-            if self._check(t, row, column):
-                self.template[row][column] = t
+            if self._check(t, find[0], find[1]):
+                self.template[find[0]][find[1]] = t
                 if self._solve():
                     return True
-        self.template[row][column] = 0
+        self.template[find[0]][find[1]] = 0
         return False
 
     def is_correct(self, val, x, y):

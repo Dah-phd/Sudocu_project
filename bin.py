@@ -155,7 +155,7 @@ class GUI:
         Quite fat, and far from pretty but most if is drawing and it dose the job well
         '''
         self.score = highscore(
-            dbase_name='res\\saves',
+            base_name='res\\saves',
             high='min')
         name_box = InputBox((250, 60, 400, 53), font_size=66)
         easy = InputBox((50, 130, 200, 50), text='Easy', font_size=66)
