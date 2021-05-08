@@ -1,8 +1,12 @@
+from . import solver
+
+
 class sudoku:
     def __init__(self, board):
         self.board = board
-        self.template = [row.copy() for row in board]
-        self._solve()
+        key = solver.make_key([row.copy() for row in board])
+        self.template = [key[i:i+9] for i in range(0, 81, 9)]
+        # self._solve()
 
     def _check(self, val, row, column):
         for row_ in range(9):

@@ -1,7 +1,5 @@
 #sudoku game
 
-Using tkinter as GUI and requiest to get boards.
-The meat of the project is the solver.
-Build as OOP with timer and score board (local).
-
-Still not tested
+* Current version uses Rust implementation of the sudoku solver as extension
+* Game is tested and seems to worker properly
+* res/solve_log.py contains solving algorithm (backtrack) and solver.so [(rust implementation)](https://github.com/Dah-phd/sudoku_pymod.git)
