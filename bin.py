@@ -23,6 +23,14 @@ class GUI:
         self.dims = (730, 800)
         self.grid = pg.display.set_mode(self.dims)
         self.difficulty = 3
+        self.controls_map = {
+            pg.K_RETURN: self.check,
+            pg.K_KP_ENTER: self.check,
+            pg.K_UP: lambda: self._box_arrows(0, -1),
+            pg.K_DOWN: lambda: self._box_arrows(0, 1),
+            pg.K_LEFT: lambda: self._box_arrows(-1, 0),
+            pg.K_RIGHT: lambda: self._box_arrows(1, 0)
+        }
 
     def run(self):
 
@@ -44,7 +52,7 @@ class GUI:
                 pad_x = 2 if n_row < 3 else 7 if n_row < 6 else 12
                 pad_y = 0 if n_sq < 3 else 5 if n_sq < 6 else 10
                 pg.draw.rect(self.grid, (255, 255, 255),
-                             (n_sq*80+pad_y, n_row*80+pad_x, 78, 78))
+                             (n_sq*80+pad_y, self._box_arrows(0, -1)n_row*80+pad_x, 78, 78))
                 if sq != 0:
                     self.grid.blit(self.font.render(
                         str(sq), True, (0, 0, 0)), (n_sq*80+20+pad_y, n_row*80+pad_x)
@@ -78,26 +86,27 @@ class GUI:
             box[2].draw(self.grid)
 
     def controls(self):
+        event_handlers = {
+            pg.QUIT: lambda _: self.active = False,
+            pg.MOUSEBUTTONDOWN: self._handle_mouse_click
+            pg.KEYDOWN: self._handle_key_press
+        }
         for event in pg.event.get():
-            if event.type == pg.QUIT:
-                self.active = False
-            if event.type == pg.MOUSEBUTTONDOWN:
-                for box in self._text_boxes:
-                    box[2].handle_event(event)
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_RETURN or event.key == pg.K_KP_ENTER:
-                    self.check()
-                elif event.key in self.keys:
-                    for box in self._text_boxes:
-                        box[2].handle_event(event)
-                elif event.key == pg.K_UP:
-                    self._box_arrows(0, -1)
-                elif event.key == pg.K_DOWN:
-                    self._box_arrows(0, 1)
-                elif event.key == pg.K_LEFT:
-                    self._box_arrows(-1, 0)
-                elif event.key == pg.K_RIGHT:
-                    self._box_arrows(1, 0)
+            if event.type in event_handlers:
+                event_handlers[event.type](event)
+
+
+    def _handle_mouse_click(self, event):
+        for box in self._text_boxes:
+            box[2].handle_event(event)
+
+    def _handle_key_press(self, key_event):
+        event_handler = self.controls_map.get(event.key)
+        if event_handler is not None:
+            return event_handler()
+        if key_event.key in self.keys:
+            for box in self._text_boxes:
+                box[2].handle_event(key_event)
 
     def _box_arrows(self, x, y):
         for box in self._text_boxes:
@@ -151,9 +160,7 @@ class GUI:
             pg.display.update()
 
     def start(self):
-        '''
-        Quite fat, and far from pretty but most if is drawing and it dose the job well
-        '''
+        # TODO: extract methods 
         self.score = highscore(
             base_name='res\\saves',
             high='min')
