@@ -3,7 +3,7 @@ import sqlite3 as sq
 from operator import itemgetter
 
 
-class highscore:
+class Highscore:
 
     def __init__(self, base_name, name=None, high='max'):
         '''

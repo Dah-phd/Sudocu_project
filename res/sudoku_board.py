@@ -18,7 +18,7 @@ class request_tmp:
             self.fields = r['squares']
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             self.connection = False
-            with open('oftemp.json', 'r') as f:
+            with open('res/oftemp.json', 'r') as f:
                 self.fields = json.load(f)[str(self.difficulty)]
 
     def _build(self):
